@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>METEOR MADNESS</title>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      display: flex;
+      height: 100vh;
+    }
+    
+    #map {
+      width: 75%;
+      height: 100vh;
+      position: relative;
+    }
+    
+    .results-panel {
+      width: 25%;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f0f1e 0%, #1a1a2e 50%, #0f0f1e 100%);
+      overflow-y: auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .new-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+      border: none;
+      border-radius: 25px;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+      z-index: 100;
+    }
+    
+    .new-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+    }
+    
+    .results-content {
+      padding: 40px 25px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .results-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .results-header h1 {
+      font-size: 32px;
+      font-weight: 200;
+      letter-spacing: 8px;
+      color: #fff;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px rgba(100, 181, 246, 0.3);
+      position: relative;
+    }
+    
+    .results-header h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #64b5f6, transparent);
+    }
+    
+    .crater-image-container {
+      width: 100%;
+      max-width: 220px;
+      height: 220px;
+      margin: 0 auto 20px;
+      background: radial-gradient(circle at 30% 30%, #3a3a4e, #1a1a2e);
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 
+                  inset 0 -5px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .crater-image-container::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      background: linear-gradient(135deg, #64b5f6, #42a5f5, #1e88e5, #64b5f6);
+      border-radius: 50%;
+      z-index: -1;
+      animation: rotate 4s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .crater-image-container .placeholder {
+      color: #666;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .crater-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .crater-title {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #aaa;
+      margin-top: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .crater-title .size {
+      font-size: 36px;
+      font-weight: 700;
+      color: #fff;
+      display: block;
+      margin-bottom: 5px;
+      background: linear-gradient(135deg, #64b5f6, #42a5f5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 10px rgba(100, 181, 246, 0.3);
+    }
+    
+    .stats-list {
+      margin-top: 40px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 15px;
+      padding: 10px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .stat-item {
+      padding: 20px 15px;
+      border-bottom: 1px solid rgba(100, 181, 246, 0.1);
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #64b5f6, transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .stat-item:hover {
+      background: rgba(100, 181, 246, 0.05);
+      transform: translateX(5px);
+    }
+    
+    .stat-item:hover::before {
+      opacity: 1;
+    }
+    
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: #777;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #64b5f6, #90caf9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 10px rgba(100, 181, 246, 0.2);
+      letter-spacing: 0.5px;
+    }
+    
+    .results-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .results-panel::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .results-panel::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #64b5f6, #42a5f5);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <div class="results-panel">
+    <div class="results-content" id="results">
+      <div class="results-header">
+        <h1>RESULTS</h1>
+        
+        <div class="crater-image-container">
+          <img src="meteorcrater.png" alt="Meteor Crater" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div class="placeholder" style="display:none;">Crater Impact Zone</div>
+        </div>
+        
+        <div class="crater-title">
+          <div class="size" id="craterSize">0 km</div>
+          <div>WIDE CRATER</div>
+        </div>
+      </div>
+      
+      <div class="stats-list">
+        <div class="stat-item">
+          <div class="stat-label">Target Location</div>
+          <div class="stat-value" id="targetLocation">Loading...</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Coordinates</div>
+          <div class="stat-value" id="targetCoords">Loading...</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Asteroid Name</div>
+          <div class="stat-value" id="asteroidName">Loading...</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Energy Released</div>
+          <div class="stat-value" id="energy">0 Mt</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Crater Diameter</div>
+          <div class="stat-value" id="craterDiameter">0 km</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Crater Depth</div>
+          <div class="stat-value" id="craterDepth">0 m</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Damage Radius</div>
+          <div class="stat-value" id="damageRadius">0 km</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Impact Speed</div>
+          <div class="stat-value" id="impactSpeed">20 km/s</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Asteroid Diameter</div>
+          <div class="stat-value" id="asteroidSize">100 m</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Fireball Radius</div>
+          <div class="stat-value" id="fireballRadius">0 km</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Air Blast Radius</div>
+          <div class="stat-value" id="airBlastRadius">0 km</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Thermal Radiation Radius</div>
+          <div class="stat-value" id="thermalRadius">0 km</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Earthquake Magnitude</div>
+          <div class="stat-value" id="earthquakeMag">0.0</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Tsunami Risk</div>
+          <div class="stat-value" id="tsunamiRisk">Calculating...</div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-label">Local Elevation</div>
+          <div class="stat-value" id="elevation">Calculating...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="new-btn" onclick="window.location.href='simulation.html'">New Simulation</button>
+
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script>
+    // Retrieve data from sessionStorage
+    const targetLat = parseFloat(sessionStorage.getItem('targetLat')) || 0;
+    const targetLng = parseFloat(sessionStorage.getItem('targetLng')) || 0;
+    const targetName = sessionStorage.getItem('targetName') || 'Unknown Location';
+    
+    const craterDiameter = parseFloat(sessionStorage.getItem('craterDiameter')) || 0;
+    const damageRadius = parseFloat(sessionStorage.getItem('damageRadius')) || 0;
+    const impactMegatons = parseFloat(sessionStorage.getItem('impactMegatons')) || 0;
+    const meteorName = sessionStorage.getItem('meteorName') || 'Unknown Asteroid';
+    const meteorSpeed = parseFloat(sessionStorage.getItem('meteorSpeed')) || 20;
+    const meteorDiameter = parseFloat(sessionStorage.getItem('meteorDiameter')) || 100;
+    
+    // Calculate additional impact effects
+    const craterDepth = craterDiameter * 0.2 * 1000;
+    const fireballRadius = Math.pow(impactMegatons, 0.4) * 0.5;
+    const airBlastRadius = Math.pow(impactMegatons, 0.33) * 2;
+    const thermalRadius = Math.pow(impactMegatons, 0.41) * 1.5;
+    const earthquakeMag = 0.67 * Math.log10(impactMegatons) + 4.87;
+    
+    // Update UI with all data
+    document.getElementById('targetLocation').textContent = targetName;
+    document.getElementById('targetCoords').textContent = `${targetLat.toFixed(4)}°, ${targetLng.toFixed(4)}°`;
+    document.getElementById('asteroidName').textContent = meteorName;
+    document.getElementById('energy').textContent = impactMegatons.toFixed(2) + ' Mt';
+    document.getElementById('craterSize').textContent = craterDiameter.toFixed(2) + ' km';
+    document.getElementById('craterDiameter').textContent = craterDiameter.toFixed(2) + ' km';
+    document.getElementById('craterDepth').textContent = craterDepth.toFixed(0) + ' m';
+    document.getElementById('damageRadius').textContent = damageRadius.toFixed(2) + ' km';
+    document.getElementById('impactSpeed').textContent = meteorSpeed.toFixed(2) + ' km/s';
+    document.getElementById('asteroidSize').textContent = meteorDiameter.toFixed(1) + ' m';
+    document.getElementById('fireballRadius').textContent = fireballRadius.toFixed(2) + ' km';
+    document.getElementById('airBlastRadius').textContent = airBlastRadius.toFixed(2) + ' km';
+    document.getElementById('thermalRadius').textContent = thermalRadius.toFixed(2) + ' km';
+    document.getElementById('earthquakeMag').textContent = earthquakeMag.toFixed(1);
+    
+    // Fetch hazard data with real API
+    fetchHazardData(targetLat, targetLng);
+    
+    const MAPTILER_KEY = '0GCZRo8V9UPQFhWV1vt6';
+    
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`,
+      center: [targetLng, targetLat],
+      zoom: 10,
+      pitch: 0,
+      bearing: 0
+    });
+    
+    map.addControl(new maplibregl.NavigationControl());
+    
+    map.on('load', function() {
+      displayCrater();
+    });
+    
+    function displayCrater() {
+      const location = { lng: targetLng, lat: targetLat };
+      
+      const layers = [
+        { radius: craterDiameter, color: '#a89476', opacity: 0.2, id: 'ejecta-field' },
+        { radius: craterDiameter * 0.92, color: '#9d8566', opacity: 0.2, id: 'outer-rim' },
+        { radius: craterDiameter * 0.85, color: '#8b7355', opacity: 0.2, id: 'rim-wall' },
+        { radius: craterDiameter * 0.75, color: '#7a6347', opacity: 0.2, id: 'terrace-1' },
+        { radius: craterDiameter * 0.65, color: '#6d5a42', opacity: 0.2, id: 'terrace-2' },
+        { radius: craterDiameter * 0.5, color: '#5d4a35', opacity: 0.2, id: 'inner-wall' },
+        { radius: craterDiameter * 0.3, color: '#4a3828', opacity: 0.2, id: 'crater-floor' },
+        { radius: craterDiameter * 0.1, color: '#3a2818', opacity: 0.2, id: 'central-peak' }
+      ];
+      
+      const fireballSource = {
+        type: 'geojson',
+        data: createCircle(location, fireballRadius)
+      };
+      
+      const blastSource = {
+        type: 'geojson',
+        data: createCircle(location, damageRadius)
+      };
+      
+      map.addSource('blast', blastSource);
+      map.addLayer({
+        id: 'blast-layer',
+        type: 'fill',
+        source: 'blast',
+        paint: {
+          'fill-color': '#ff9800',
+          'fill-opacity': 0.12
+        }
+      });
+      map.addLayer({
+        id: 'blast-outline',
+        type: 'line',
+        source: 'blast',
+        paint: {
+          'line-color': '#ff9800',
+          'line-width': 4,
+          'line-opacity': 0.6,
+          'line-dasharray': [3, 2]
+        }
+      });
+      
+      map.addSource('fireball', fireballSource);
+      map.addLayer({
+        id: 'fireball-layer',
+        type: 'fill',
+        source: 'fireball',
+        paint: {
+          'fill-color': '#ff5722',
+          'fill-opacity': 0.25
+        }
+      });
+      map.addLayer({
+        id: 'fireball-outline',
+        type: 'line',
+        source: 'fireball',
+        paint: {
+          'line-color': '#ff5722',
+          'line-width': 4,
+          'line-opacity': 0.75
+        }
+      });
+      
+      layers.forEach(layer => {
+        map.addSource(layer.id, {
+          type: 'geojson',
+          data: createCircle(location, layer.radius)
+        });
+        map.addLayer({
+          id: layer.id,
+          type: 'fill',
+          source: layer.id,
+          paint: {
+            'fill-color': layer.color,
+            'fill-opacity': layer.opacity
+          }
+        });
+      });
+      
+      map.addSource('rim-highlight', {
+        type: 'geojson',
+        data: createRing(location, craterDiameter * 0.85, craterDiameter * 0.88)
+      });
+      map.addLayer({
+        id: 'rim-highlight',
+        type: 'line',
+        source: 'rim-highlight',
+        paint: {
+          'line-color': '#c4b5a0',
+          'line-width': 3,
+          'line-opacity': 0.25
+        }
+      });
+      
+      map.addSource('debris-pattern', {
+        type: 'geojson',
+        data: createDebrisRays(location, craterDiameter, 12)
+      });
+      map.addLayer({
+        id: 'debris-pattern',
+        type: 'line',
+        source: 'debris-pattern',
+        paint: {
+          'line-color': '#9d8566',
+          'line-width': 2,
+          'line-opacity': 0.4,
+          'line-blur': 1
+        }
+      });
+      
+      const el = document.createElement('div');
+      el.style.width = '20px';
+      el.style.height = '20px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = '#ff0000';
+      el.style.border = '3px solid white';
+      el.style.boxShadow = '0 0 15px rgba(255, 0, 0, 0.8)';
+      
+      new maplibregl.Marker({element: el})
+        .setLngLat([location.lng, location.lat])
+        .addTo(map);
+    }
+    
+    function createRing(center, innerRadius, outerRadius) {
+      const points = 64;
+      const outer = [];
+      const inner = [];
+      
+      const distanceX = 1 / (111.320 * Math.cos(center.lat * Math.PI / 180));
+      const distanceY = 1 / 110.574;
+      
+      for (let i = 0; i <= points; i++) {
+        const theta = (i / points) * (2 * Math.PI);
+        outer.push([
+          center.lng + (outerRadius * distanceX * Math.cos(theta)),
+          center.lat + (outerRadius * distanceY * Math.sin(theta))
+        ]);
+        inner.push([
+          center.lng + (innerRadius * distanceX * Math.cos(theta)),
+          center.lat + (innerRadius * distanceY * Math.sin(theta))
+        ]);
+      }
+      
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [outer, inner.reverse()]
+        }
+      };
+    }
+    
+    function createDebrisRays(center, radius, numRays) {
+      const features = [];
+      const distanceX = 1 / (111.320 * Math.cos(center.lat * Math.PI / 180));
+      const distanceY = 1 / 110.574;
+      
+      for (let i = 0; i < numRays; i++) {
+        const angle = (i / numRays) * (2 * Math.PI);
+        const length = radius * (1.2 + Math.random() * 0.5);
+        const startRadius = radius * 0.9;
+        
+        const coords = [
+          [
+            center.lng + (startRadius * distanceX * Math.cos(angle)),
+            center.lat + (startRadius * distanceY * Math.sin(angle))
+          ],
+          [
+            center.lng + (length * distanceX * Math.cos(angle)),
+            center.lat + (length * distanceY * Math.sin(angle))
+          ]
+        ];
+        
+        features.push({
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: coords
+          }
+        });
+      }
+      
+      return {
+        type: 'FeatureCollection',
+        features: features
+      };
+    }
+    
+    function createCircle(center, radiusKm) {
+      const points = 64;
+      const coords = [];
+      const distanceX = radiusKm / (111.320 * Math.cos(center.lat * Math.PI / 180));
+      const distanceY = radiusKm / 110.574;
+      
+      for (let i = 0; i < points; i++) {
+        const theta = (i / points) * (2 * Math.PI);
+        const x = distanceX * Math.cos(theta);
+        const y = distanceY * Math.sin(theta);
+        coords.push([center.lng + x, center.lat + y]);
+      }
+      coords.push(coords[0]);
+      
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [coords]
+        }
+      };
+    }
+    
+    // Fetch geological and hazard data using real elevation API
+    async function fetchHazardData(lat, lon) {
+      try {
+        // Use Open-Elevation API for accurate elevation data
+        const elevUrl = `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`;
+        
+        try {
+          const elevResponse = await fetch(elevUrl);
+          if (elevResponse.ok) {
+            const elevData = await elevResponse.json();
+            if (elevData.results && elevData.results.length > 0) {
+              const elevation = elevData.results[0].elevation;
+              document.getElementById('elevation').textContent = elevation.toFixed(0) + ' m';
+              
+              // Calculate tsunami risk based on elevation and impact energy
+              calculateTsunamiRisk(lat, lon, elevation);
+              return;
+            }
+          }
+        } catch (err) {
+          console.log('Elevation API error:', err);
+        }
+        
+        // Fallback if API unavailable
+        document.getElementById('elevation').textContent = 'N/A';
+        calculateTsunamiRisk(lat, lon, null);
+        
+      } catch (error) {
+        console.error('Error fetching hazard data:', error);
+        document.getElementById('elevation').textContent = 'N/A';
+        document.getElementById('tsunamiRisk').textContent = 'Unable to Calculate';
+      }
+    }
+    
+    function calculateTsunamiRisk(lat, lon, elevation) {
+      let tsunamiRisk = 'Low';
+      
+      // Ocean impacts (negative elevation = below sea level)
+      if (elevation !== null && elevation < 0) {
+        if (impactMegatons > 1000) {
+          tsunamiRisk = 'Extreme - Global Tsunami';
+        } else if (impactMegatons > 100) {
+          tsunamiRisk = 'Severe - Basin-Wide';
+        } else if (impactMegatons > 10) {
+          tsunamiRisk = 'High - Regional';
+        } else {
+          tsunamiRisk = 'Moderate';
+        }
+      }
+      // Coastal low-lying areas
+      else if (elevation !== null && elevation < 100) {
+        if (impactMegatons > 100) {
+          tsunamiRisk = 'High - Coastal Flooding';
+        } else if (impactMegatons > 10) {
+          tsunamiRisk = 'Moderate';
+        } else {
+          tsunamiRisk = 'Low';
+        }
+      }
+      // Inland/elevated areas
+      else {
+        tsunamiRisk = 'Minimal (Inland)';
+      }
+      
+      document.getElementById('tsunamiRisk').textContent = tsunamiRisk;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "com.defend",
+  "version": "1.0.0",
+  "description": "meteor",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "defend"
+  ],
+  "author": "nathan",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.9"
+  }
+  
+
+  
+}

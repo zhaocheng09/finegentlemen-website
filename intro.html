@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>METEOR MADNESS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0B0C1A;
+      color: #FFFFFF;
+      line-height: 1.6;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* 星空背景 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url("https://www.transparenttextures.com/patterns/stardust.png");
+      opacity: 0.25;
+      z-index: -1;
+      animation: moveStars 120s linear infinite;
+    }
+    @keyframes moveStars {
+      from { background-position: 0 0; }
+      to { background-position: 10000px 10000px; }
+    }
+
+    /* ===== Header ===== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      background: rgba(15, 15, 35, 0.7);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid #222;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-img {
+      width: 55px;
+      height: 55px;
+      filter: drop-shadow(0 0 6px #4fc3f7);
+    }
+
+    .header1 {
+      font-size: 52px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #00d4ff, #ff80ff);
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 15px rgba(0,212,255,0.2);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 35px;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #4fc3f7;
+      font-weight: 500;
+      letter-spacing: 1px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    nav ul li a:hover,
+    nav ul li a:active {
+      background: rgba(255,255,255,0.1);
+      border-bottom: 2px solid #4fc3f7;
+      color: #4fc3f7;
+    }
+
+    nav ul li a.active {
+      border-bottom: 2px solid #4fc3f7;
+      color: #4fc3f7;
+    }
+
+    /* ===== 主体 ===== */
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 80px;
+      padding: 60px 80px;
+    }
+
+    section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 50px;
+      padding: 50px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(25,28,55,0.9), rgba(10,10,25,0.9));
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    section .text {
+      flex: 1;
+    }
+
+    section h2 {
+      font-size: 38px;
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: #AADDFF;
+      text-shadow: 0 0 8px rgba(170,221,255,0.4);
+    }
+
+    section p {
+      font-size: 18px;
+      margin-bottom: 18px;
+      color: #e0e0e0;
+    }
+
+    .intro-img, .challenge-image, .progress-image {
+      width: 480px;
+      height: auto;
+      border-radius: 14px;
+      box-shadow: 0 0 25px rgba(79,195,247,0.4);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .intro-img:hover, .challenge-image:hover, .progress-image:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 35px rgba(255,128,255,0.6);
+    }
+
+    /* ===== Footer ===== */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 25px 60px;
+      border-top: 1px solid #2A2B3C;
+      font-size: 15px;
+      color: #AAAAAA;
+      background: rgba(15, 15, 35, 0.6);
+      backdrop-filter: blur(5px);
+    }
+
+    footer a {
+      color: #4fc3f7;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    footer a:hover {
+      color: #FFD580;
+    }
+
+    /* ===== 动画 ===== */
+    .fade-in-right {
+      opacity: 0;
+      transform: translateX(60px);
+      animation: fadeInRight 1.6s ease forwards;
+    }
+    @keyframes fadeInRight {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* ===== Fun Facts Hover ===== */
+    .fun-fact {
+      background: rgba(79,195,247,0.1);
+      padding: 8px 12px;
+      border-left: 4px solid #4fc3f7;
+      font-style: italic;
+      color: #cceeff;
+      border-radius: 6px;
+      margin-top: 12px;
+
+      opacity: 0;              
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;    
+    }
+
+    section:hover .fun-fact {
+      opacity: 1;              
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="https://cdn3.iconfinder.com/data/icons/nature-life-in-color/128/meteor-1024.png" alt="Logo" class="logo-img">
+      <h1 class="header1">Meteor Madness</h1>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="intronew.html" class="active">INTRO</a></li>
+        <li><a href="simulation.html" class="simulation">SIMULATION</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Part 1 -->
+    <section class="intro section-bg">
+      <div class="text">
+        <h2>Part 1: Introduction</h2>
+        <p>Zoom past twinkling stars, colorful planets, and sparkling comets! Welcome to SPACE! But watch out… flying through space are meteors — space rocks that streak across the sky like fireworks. Some meteors are tiny, some are giant boulders from space, and they can be super exciting to learn about.</p>
+        <p class="fun-fact">🌠 Fun Fact: Some meteors can travel at up to 160,000 kilometers per hour—faster than a speeding bullet by thousands of times!</p>
+      </div>
+      <div class="image fade-in-right">
+        <img src="https://cdn.mos.cms.futurecdn.net/iR2LcnDPQVaewJBhvkvKh3-1200-80.jpg" alt="Intro Image" class="intro-img">
+      </div>
+    </section>
+
+    <!-- Part 2 -->
+    <section class="threats section-bg">
+      <div class="text">
+        <h2>Part 2: Space Trouble Ahead!</h2>
+        <p>Meteors may look cool, but they can be dangerous! They can make craters, smash buildings, or even start fires. Long ago, a huge meteor even caused the dinosaurs to disappear! Don’t worry though — by learning about meteors, we can be ready to protect our planet.</p>
+        <p class="fun-fact">☄️ Fun Fact: The Hoba meteorite in Namibia is the largest known meteorite on Earth, weighing over 60 tons!</p>
+      </div>
+      <div class="image fade-in-right">
+        <img src="https://cdn.pixabay.com/photo/2021/03/01/13/42/meteorite-6059746_1280.jpg" alt="Challenge Image" class="challenge-image">
+      </div>
+    </section>
+
+    <!-- Part 3 -->
+    <section class="progress section-bg">
+      <div class="text">
+        <h2>Part 3: Heroes of Space</h2>
+        <p>Meet the real-life space detectives — NASA scientists! They use telescopes and satellites to watch the sky for meteors zooming toward Earth. By tracking these space rocks, they help keep our planet safe. And guess what? With our project, YOU can join the mission too!</p>
+        <p class="fun-fact">🛰️ Fun Fact: NASA’s NEOWISE telescope can detect thousands of near-Earth objects and even track comets millions of kilometers away!</p>
+      </div>
+      <div class="image fade-in-right">
+        <img src="https://cdn.pixabay.com/photo/2012/11/28/11/25/satellite-67718_1280.jpg" alt="Progress Image" class="progress-image">
+      </div>
+    </section>
+
+    <!-- Part 4 -->
+    <section class="challenge section-bg">
+      <div class="text">
+        <h2>Part 4: Your Mission</h2>
+        <p>We made 3 awesome tools for you to explore meteors! The Free Simulator lets you play with meteors however you like. The Preset Simulator shows real-life meteor adventures. And Meteor Defender lets you protect Earth like a true space hero! Your mission is to learn about meteors, have fun, and help keep our home safe.</p>
+        <p class="fun-fact">✨ Fun Fact: Meteor showers occur when Earth passes through comet debris, sometimes producing dozens of meteors per hour streaking across the sky!</p>
+      </div>
+      <div class="image fade-in-right">
+        <img src="https://cdn.pixabay.com/photo/2018/08/13/17/20/shooting-star-3603455_1280.jpg" alt="Challenge Image" class="challenge-image">
+      </div>
+    </section>
+
+    <!-- Part 5 -->
+<section class="start section-bg">
+  <div class="text">
+    <h2>Part 5: How to get started</h2>
+    <p>Ready to become a meteor hero? First, pick a simulator — Free or Preset. Next, learn about meteor size, speed, and direction. Then, try Meteor Defender and protect Earth from incoming meteors! Every try teaches you something new, so play, experiment, and have fun saving the planet!</p>
+    <p class="fun-fact">⚡ Fun Fact: Some meteors are made mostly of iron and nickel, making them super dense and heavy for their size!</p>
+  </div>
+  <div class="image fade-in-right">
+    <img src="https://cdn.pixabay.com/photo/2012/11/28/10/34/rocket-launch-67643_1280.jpg" alt="Challenge Image" class="challenge-image">
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>Made for NASA Space Apps Challenge 2025</span>
+  <a href="https://api.nasa.gov/" target="_blank" class="visit">Visit NASA</a>
+</footer>
+</body>
+</html>

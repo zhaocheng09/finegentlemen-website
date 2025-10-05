@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team — Meteor Madness</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="about.css">
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="https://cdn3.iconfinder.com/data/icons/nature-life-in-color/128/meteor-1024.png" alt="Logo" class="logo-img">
+      <h1 class="header1">Meteor Madness</h1>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="intro.html" class="active">INTRO</a></li>
+        <li><a href="simulation.html" class="simulation" >SIMULATION</a></li>
+        <li><a href="about.html" class="team-text">TEAM</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="about-header">
+      <h2>Meet Our Team</h2>
+      <p>We are a team of 5 passionate innovators, each focusing on different parts of the Meteor Madness project — 
+      from design and interactivity to 3D visualization, data handling, and user experience.</p>
+    </section>
+
+    <section class="team">
+      <div class="member">
+        <img src="https://sms.chms1.edu.my/images/photos/014727-240405-239c8b.jpg" alt="Team Leader">
+        <h3>Nathan Lu</h3>
+        <p>Backend & Data</p>
+        <p class="bio">Manages datasets and APIs. Fetches meteor data from NASA API and ensures smooth integration with the web app.</p>
+      </div>
+      <div class="member">
+        <img src="https://sms.chms1.edu.my/images/photos/014413-240405-138e44.jpg" alt="Team Member 2">
+        <h3>Chiong Zhao Cheng</h3>
+        <p>Frontend/UI Designer</p>
+        <p class="bio">Builds and styles the webpage with HTML & CSS. Focuses on layout, dark theme, fonts, and overall space vibe design.</p>
+      </div>
+      <div class="member">
+        <img src="https://sms.chms1.edu.my/images/photos/014537-240405-6633a0.jpg" alt="Team Member 3">
+        <h3>Joel Bong</h3>
+        <p>3D Visualization</p>
+        <p class="bio">Works on 3D meteor simulation. Builds orbit paths, falling meteors, and visual effects using Three.js.</p>
+      </div>
+      <div class="member">
+        <img src="https://sms.chms1.edu.my/images/photos/014457-240405-c03203.jpg" alt="Team Member 4">
+        <h3>Terence Yap</h3>
+        <p>Interaction Developer</p>
+        <p class="bio">Handles JavaScript interactions. Creates sliders, buttons, and dropdowns that let users control simulation parameters.</p>
+      </div>
+      <div class="member">
+        <img src="https://sms.chms1.edu.my/images/photos/013983-250311-314644.jpg" alt="Team Member 5">
+        <h3>Ho Zhi Yu</h3>
+        <p>3D Globe Visualization</p>
+        <p class="bio">Creates an interactive 3D globe that users can rotate and zoom. Plots meteor impacts on the globe with tooltips and interactive markers, helping users explore spatial data in an immersive way.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Made for NASA Space Apps Challenge 2025</span>
+    <a href="#" target="_blank" class="visit">Visit NASA</a>
+  </footer>
+</body>
+</html>
+
+<style>
+/* ========== 基础风格 ========== */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0B0C1A;
+  color: #FFFFFF;
+  line-height: 1.6;
+  margin: 0;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 星空背景 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity: 0.25;
+  z-index: -1;
+  animation: moveStars 120s linear infinite;
+}
+@keyframes moveStars {
+  from { background-position: 0 0; }
+  to { background-position: 10000px 10000px; }
+}
+
+/* ========== Header ========== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+  background: rgba(15, 15, 35, 0.7);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid #222;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  width: 55px;
+  height: 55px;
+  filter: drop-shadow(0 0 6px #4fc3f7);
+}
+
+.header1 {
+  font-size: 40px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #00d4ff, #ff80ff);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(0,212,255,0.2);
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 35px;
+}
+
+/* 通用导航样式 */
+nav ul li a {
+  text-decoration: none;
+  color: #4fc3f7;
+  font-weight: 500;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent; /* 默认没有下划线 */
+}
+
+nav ul li a:hover,
+nav ul li a:active {
+  border-bottom: 2px solid #4fc3f7; /* hover 和点击时才显示下划线 */
+  color: #4fc3f7;
+  background: rgba(255,255,255,0.1);
+}
+
+.active:hover{
+  opacity: 0.8;
+}
+
+.active:active{
+  opacity: 0.6;
+}
+
+.team-text:hover{
+  opacity: 0.8;
+
+}
+
+.team-text:active{
+  opacity:0.6;
+
+}
+
+.simulation:hover{
+  opacity: 0.8;
+}
+
+.simulation:active{
+  opacity: 0.6;
+}
+
+/* 只在 TEAM 页面时高亮 */
+nav ul li a.team-text {
+  border-bottom: 2px solid #4fc3f7; 
+  color: #4fc3f7;
+}
+
+
+/* ========== About Header ========== */
+.about-header {
+  text-align: center;
+  padding: 80px 20px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.about-header h2 {
+  font-size: 42px;
+  margin-bottom: 15px;
+  color: #AADDFF;
+  text-shadow: 0 0 8px rgba(170,221,255,0.4);
+}
+
+.about-header p {
+  font-size: 18px;
+  color: #BBBBBB;
+}
+
+/* ========== Team Grid ========== */
+.team {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 固定5列 */
+  gap: 20px; /* 间距稍微缩小，避免太宽 */
+  padding: 40px 30px;
+}
+
+.member {
+  background: linear-gradient(135deg, #0B0C1A, #050510);
+  border: 1px solid rgba(30, 40, 60, 0.5);
+  border-radius: 12px;
+  padding: 15px; /* 缩小 padding */
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.member:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 25px rgba(255,128,255,0.4);
+}
+
+.member img {
+  width: 100px;  /* 缩小头像 */
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+  border: 2px solid #1e2a40;
+}
+
+.member h3 {
+  font-size: 18px; /* 调小字体避免换行 */
+  margin: 8px 0 4px;
+}
+
+
+.member p {
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.member .bio {
+  font-size: 13px;
+  color: #AAAAAA;
+  margin-top: 8px;
+}
+/* ========== Footer ========== */
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 60px;
+  border-top: 1px solid #2A2B3C;
+  font-size: 14px;
+  color: #AAAAAA;
+  background: rgba(15, 15, 35, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+footer a {
+  color: #4fc3f7;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: #FFD580;
+}
+ .visit:active{
+        opacity: 0.6
+    }
+</style>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>METEOR MADNESS</title>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Arial', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .left-panel {
+      flex: 1;
+      position: relative;
+      background: #000;
+    }
+
+    #earth-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .launch-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #ff4500, #ff6347);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .launch-btn:hover {
+      background: linear-gradient(135deg, #ff6347, #ff7f50);
+      box-shadow: 0 6px 20px rgba(255, 69, 0, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .launch-btn:active {
+      transform: translateY(0);
+    }
+
+    .launch-btn.disabled {
+      background: linear-gradient(135deg, #666, #888);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .launch-btn.disabled:hover {
+      background: linear-gradient(135deg, #666, #888);
+      transform: none;
+    }
+
+    .restart-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .restart-btn:hover {
+      background: linear-gradient(135deg, #764ba2, #8b5fc7);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-left: 2px solid #333;
+    }
+
+    .map-header {
+      background: #0d0d0d;
+      padding: 20px;
+      border-bottom: 2px solid #333;
+    }
+
+    .map-header h2 {
+      font-size: 24px;
+      color: #4fc3f7;
+      margin-bottom: 10px;
+    }
+
+    .map-header p {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .map-controls {
+      padding: 20px;
+      background: #151515;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    .control-group {
+      background: rgba(42, 47, 64, 0.5);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(79, 195, 247, 0.3);
+    }
+
+    .control-group h3 {
+      font-size: 13px;
+      color: #4fc3f7;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .input-row label {
+      font-size: 12px;
+      color: #aaa;
+      min-width: 70px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background: #2a2f40;
+      color: white;
+      font-size: 13px;
+    }
+
+    .input-row input:focus {
+      outline: none;
+      border-color: #4fc3f7;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #2e4da7, #5f5fe0);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s ease;
+      margin-top: 5px;
+    }
+
+    .btn:hover {
+      background: linear-gradient(90deg, #4169e1, #7b7bff);
+      box-shadow: 0 0 10px rgba(65,105,225,0.5);
+    }
+
+    .coord-display {
+      background: rgba(79, 195, 247, 0.1);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: monospace;
+      color: #4fc3f7;
+      margin-top: 10px;
+      border: 1px solid rgba(79, 195, 247, 0.3);
+    }
+
+    .map-wrapper {
+      flex: 1;
+      position: relative;
+      padding: 20px;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #333;
+      cursor: crosshair;
+    }
+
+    .marker {
+      background-color: #ff4444;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .location-status {
+      background: rgba(79, 195, 247, 0.2);
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 12px;
+      color: #4fc3f7;
+      margin: 15px 20px;
+      border: 1px solid rgba(79, 195, 247, 0.4);
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        flex-direction: column;
+      }
+      .left-panel, .right-panel {
+        flex: none;
+        height: 50vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Panel: 3D Earth -->
+    <div class="left-panel">
+      <canvas id="earth-canvas"></canvas>
+      <button class="launch-btn disabled" id="launch-btn" onclick="launchSimulation()">☄️Launch</button>
+      <button class="restart-btn" onclick="window.location.href='simulation.html'">🔄 Restart Simulation</button>
+    </div>
+
+    <!-- Right Panel: Map Controls -->
+    <div class="right-panel">
+      <div class="map-header">
+        <h2>Select Impact Location</h2>
+        <p>Choose coordinates using the map or manual input</p>
+      </div>
+
+      <div class="map-controls">
+        <div class="control-group">
+          <h3>Coordinates</h3>
+          <div class="input-row">
+            <label>Latitude:</label>
+            <input type="number" id="lat" step="any" value="" placeholder="e.g. 39.907" />
+          </div>
+          <div class="input-row">
+            <label>Longitude:</label>
+            <input type="number" id="lng" step="any" value="" placeholder="e.g. 116.391" />
+          </div>
+          <button class="btn" onclick="goToCoordinates()">Go to Location</button>
+        </div>
+
+        <div class="control-group">
+          <h3>Search Location</h3>
+          <div class="input-row">
+            <input type="text" id="location-search" placeholder="City, Country, or Landmark..." style="min-width: 100%;" />
+          </div>
+          <button class="btn" onclick="searchLocation()">Search</button>
+        </div>
+
+        <div class="control-group">
+          <h3>Click to Select</h3>
+          <div class="coord-display" id="click-coords">
+            Click on map to select location
+          </div>
+        </div>
+      </div>
+
+      <div class="map-wrapper">
+        <div id="map"></div>
+      </div>
+
+      <div class="location-status" id="location-status">
+        No location selected yet
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.138.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.138.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+
+  <script>
+    // === 3D Earth Simulator ===
+    const canvas = document.getElementById('earth-canvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 5000);
+    camera.position.set(0, 50, 250);
+    
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false;
+    const earthRadius = 100;
+    controls.minDistance = earthRadius * 1.5;
+    controls.maxDistance = 400;
+
+    const stars = new THREE.Mesh(
+      new THREE.SphereGeometry(3000, 64, 64),
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load("https://threejs.org/examples/textures/planets/starfield.jpg"),
+        side: THREE.BackSide
+      })
+    );
+    scene.add(stars);
+
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+    sunLight.position.set(5, 3, 5);
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    const earthGeometry = new THREE.SphereGeometry(earthRadius, 128, 128);
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      map: new THREE.TextureLoader().load("https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg"),
+      specularMap: new THREE.TextureLoader().load("https://threejs.org/examples/textures/planets/earth_specular_2048.jpg"),
+      bumpMap: new THREE.TextureLoader().load("https://threejs.org/examples/textures/planets/earth_bump_2048.jpg"),
+      bumpScale: 0.3,
+      side: THREE.FrontSide
+    });
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earth);
+
+    // 创建标记点（红色发光球体）
+    let markerMesh = null;
+    function createEarthMarker(lat, lng) {
+      // 移除旧标记
+      if (markerMesh) {
+        earth.remove(markerMesh);
+      }
+
+      // 创建新标记
+      const markerGeometry = new THREE.SphereGeometry(3, 16, 16);
+      const markerMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xff4444,
+        transparent: true,
+        opacity: 0.9
+      });
+      markerMesh = new THREE.Mesh(markerGeometry, markerMaterial);
+
+      // 计算位置
+      const position = latLngToVector3(lat, lng, earthRadius + 1);
+      markerMesh.position.copy(position);
+
+      // 添加发光效果
+      const glowGeometry = new THREE.SphereGeometry(4, 16, 16);
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff8888,
+        transparent: true,
+        opacity: 0.3
+      });
+      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+      markerMesh.add(glow);
+
+      earth.add(markerMesh);
+    }
+
+    function latLngToVector3(lat, lng, radius) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lng + 180) * (Math.PI / 180);
+      const x = -(radius * Math.sin(phi) * Math.cos(theta));
+      const z = (radius * Math.sin(phi) * Math.sin(theta));
+      const y = (radius * Math.cos(phi));
+      return new THREE.Vector3(x, y, z);
+    }
+
+    fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+      .then(res => res.json())
+      .then(worldData => {
+        const countries = topojson.feature(worldData, worldData.objects.countries);
+        const material = new THREE.LineBasicMaterial({ color: 0x00ff88, linewidth: 1 });
+
+        countries.features.forEach(feature => {
+          const coords = feature.geometry.coordinates;
+          if (feature.geometry.type === "Polygon") {
+            drawPolygon(coords);
+          } else if (feature.geometry.type === "MultiPolygon") {
+            coords.forEach(polygon => drawPolygon(polygon));
+          }
+        });
+
+        function drawPolygon(polygon) {
+          polygon.forEach(ring => {
+            const points = [];
+            ring.forEach(([lon, lat]) => {
+              points.push(latLngToVector3(lat, lon, earthRadius + 0.1));
+            });
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            earth.add(line);
+          });
+        }
+      })
+      .catch(err => console.error(err));
+
+    function animate() {
+      requestAnimationFrame(animate);
+      earth.rotation.y += 0.001;
+      
+      // 让标记的发光效果脉动
+      if (markerMesh && markerMesh.children[0]) {
+        const pulse = Math.sin(Date.now() * 0.003) * 0.1 + 0.3;
+        markerMesh.children[0].material.opacity = pulse;
+      }
+      
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    });
+
+    // === Map Functionality ===
+    let selectedLat = null;
+    let selectedLng = null;
+    let selectedLocationName = "";
+    let locationSelected = false;
+
+    const MAPTILER_KEY = '0GCZRo8V9UPQFhWV1vt6';
+    let map;
+    let marker = null;
+
+    window.addEventListener('load', function() {
+      try {
+        map = new maplibregl.Map({
+          container: 'map',
+          style: `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`,
+          center: [0, 20],
+          zoom: 2
+        });
+
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+
+        map.on('load', function() {
+          console.log('Map loaded successfully');
+        });
+
+        map.on('click', function(e) {
+          const { lng, lat } = e.lngLat;
+          addMarker(lng, lat);
+          selectedLocationName = 'Custom Location';
+
+          document.getElementById('click-coords').innerHTML = `
+            <strong>Selected:</strong><br>
+            Lat: ${lat.toFixed(6)}<br>
+            Lng: ${lng.toFixed(6)}
+          `;
+
+          document.getElementById('lat').value = lat.toFixed(6);
+          document.getElementById('lng').value = lng.toFixed(6);
+        });
+      } catch (error) {
+        console.error('Failed to initialize map:', error);
+      }
+    });
+
+    function enableLaunchButton() {
+      const launchBtn = document.getElementById('launch-btn');
+      launchBtn.classList.remove('disabled');
+      locationSelected = true;
+    }
+
+    function addMarker(lng, lat) {
+      if (!map) return;
+
+      if (marker) {
+        marker.remove();
+      }
+
+      const el = document.createElement('div');
+      el.className = 'marker';
+
+      marker = new maplibregl.Marker(el)
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+      selectedLat = lat;
+      selectedLng = lng;
+      
+      // 更新 3D 地球上的标记
+      createEarthMarker(lat, lng);
+      
+      // 启用 Launch 按钮
+      enableLaunchButton();
+      
+      updateLocationStatus();
+    }
+
+    function updateLocationStatus() {
+      document.getElementById('location-status').innerHTML =
+        `Selected Location: ${selectedLocationName}<br>Coordinates: (${selectedLat.toFixed(4)}, ${selectedLng.toFixed(4)})`;
+    }
+
+    function goToCoordinates() {
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lng = parseFloat(document.getElementById('lng').value);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        alert('Please enter valid coordinates!');
+        return;
+      }
+
+      if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        alert('Invalid coordinates! Latitude must be between -90 and 90, Longitude must be between -180 and 180');
+        return;
+      }
+
+      addMarker(lng, lat);
+      selectedLocationName = 'Custom Location';
+
+      if (map) {
+        map.flyTo({ center: [lng, lat], zoom: 10, duration: 2000 });
+      }
+    }
+
+    async function searchLocation() {
+      const query = document.getElementById('location-search').value.trim();
+
+      if (!query) {
+        alert('Please enter a location name!');
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${MAPTILER_KEY}`
+        );
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+          const [lng, lat] = data.features[0].center;
+          selectedLocationName = data.features[0].place_name || query;
+
+          addMarker(lng, lat);
+
+          if (map) {
+            map.flyTo({
+              center: [lng, lat],
+              zoom: data.features[0].place_type[0] === 'country' ? 5 : 10,
+              duration: 2000
+            });
+          }
+
+          document.getElementById('lat').value = lat.toFixed(6);
+          document.getElementById('lng').value = lng.toFixed(6);
+        } else {
+          alert('Location not found, please try another name!');
+        }
+      } catch (error) {
+        alert('Search failed, please check your connection!');
+        console.error(error);
+      }
+    }
+
+    document.getElementById('lat').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') goToCoordinates();
+    });
+    document.getElementById('lng').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') goToCoordinates();
+    });
+    document.getElementById('location-search').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') searchLocation();
+    });
+
+    // Launch button function
+    function launchSimulation() {
+      if (!locationSelected || selectedLat === null || selectedLng === null) {
+        alert('Please select a target location before launching!');
+        return;
+      }
+      
+      // Store coordinates in sessionStorage to pass to next page
+      sessionStorage.setItem('targetLat', selectedLat);
+      sessionStorage.setItem('targetLng', selectedLng);
+      sessionStorage.setItem('targetName', selectedLocationName);
+      
+      // Navigate to simulation page
+      window.location.href = 'test5.html';
+    }
+  </script>
+</body>
+</html>

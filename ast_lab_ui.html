@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>METEOR MADNESS</title>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js" } }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .panel {
+      position: absolute;
+      background: rgba(20, 30, 50, 0.85);
+      backdrop-filter: blur(10px);
+      border: 3px solid #4ecdc4;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s;
+    }
+
+    #lesson-panel {
+      top: 20px;
+      left: 20px;
+      width: 280px;
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+
+    #control-panel {
+      bottom: 20px;
+      left: 20px;
+      width: 280px;
+      max-height: 400px;
+      overflow-y: auto;
+      min-height: 80px;
+    }
+
+    #info-display {
+      top: 90px;
+      right: 20px;
+      width: 300px;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+      display: none;
+    }
+
+    .panel.minimized {
+      width: 60px !important;
+      height: 60px !important;
+      padding: 10px !important;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .panel.minimized .panel-content {
+      display: none;
+    }
+
+    .minimize-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      background: rgba(78, 205, 196, 0.3);
+      border: 2px solid #4ecdc4;
+      border-radius: 50%;
+      color: #4ecdc4;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1;
+      transition: all 0.3s;
+      z-index: 10;
+      user-select: none;
+    }
+
+    .minimize-btn:hover {
+      background: rgba(78, 205, 196, 0.5);
+      transform: scale(1.1);
+    }
+
+    .lesson-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #4ecdc4;
+      margin-bottom: 15px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .lesson-step {
+      background: rgba(78, 205, 196, 0.1);
+      border-left: 4px solid #4ecdc4;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .lesson-step:hover {
+      background: rgba(78, 205, 196, 0.2);
+      transform: translateX(5px);
+    }
+
+    .lesson-step.active {
+      background: rgba(78, 205, 196, 0.3);
+      border-left-color: #ff6b6b;
+    }
+
+    .step-number {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      background: #4ecdc4;
+      color: #1a1a2e;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .step-desc {
+      font-size: 11px;
+      color: #b8c6db;
+      line-height: 1.4;
+    }
+
+    .control-group {
+      margin: 12px 0;
+    }
+
+    .control-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #4ecdc4;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 5px;
+      background: rgba(78, 205, 196, 0.3);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4ecdc4;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4ecdc4;
+      cursor: pointer;
+      border: none;
+    }
+
+    .slider-value {
+      min-width: 50px;
+      text-align: right;
+      font-weight: 600;
+      color: #fff;
+      font-size: 11px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #4ecdc4, #44a08d);
+      border: none;
+      border-radius: 8px;
+      color: #1a1a2e;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(78, 205, 196, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .info-card {
+      background: rgba(78, 205, 196, 0.15);
+      border-radius: 10px;
+      padding: 12px;
+      margin: 8px 0;
+    }
+
+    .info-title {
+      font-size: 12px;
+      color: #4ecdc4;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .info-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .info-unit {
+      font-size: 12px;
+      color: #b8c6db;
+      margin-left: 5px;
+    }
+
+    .fact-box {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 159, 64, 0.2));
+      border: 2px solid #ff6b6b;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .fact-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ff6b6b;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fact-text {
+      font-size: 11px;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    .asteroid-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .asteroid-btn {
+      padding: 10px;
+      background: rgba(78, 205, 196, 0.2);
+      border: 2px solid #4ecdc4;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .asteroid-btn:hover {
+      background: rgba(78, 205, 196, 0.3);
+    }
+
+    .asteroid-btn.selected {
+      background: #4ecdc4;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    #quiz-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .quiz-box {
+      background: linear-gradient(135deg, #1a1a2e, #0f3460);
+      border: 3px solid #4ecdc4;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 90%;
+    }
+
+    .quiz-question {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: #4ecdc4;
+      line-height: 1.5;
+    }
+
+    .quiz-option {
+      background: rgba(78, 205, 196, 0.1);
+      border: 2px solid #4ecdc4;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quiz-option:hover {
+      background: rgba(78, 205, 196, 0.2);
+      transform: translateX(5px);
+    }
+
+    .quiz-option.correct {
+      background: rgba(68, 255, 136, 0.3);
+      border-color: #44ff88;
+    }
+
+    .quiz-option.wrong {
+      background: rgba(255, 107, 107, 0.3);
+      border-color: #ff6b6b;
+    }
+
+    .instruction-box {
+      background: rgba(255, 159, 64, 0.2);
+      border: 2px solid #ff9f40;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 12px 0;
+      text-align: center;
+      font-weight: 600;
+      color: #ff9f40;
+      font-size: 11px;
+    }
+
+    .reset-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 999;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .reset-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .simulation-btn {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #ff4500, #ff6347);
+      border: 2px solid #ff4500;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 999;
+      box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
+    }
+
+    .simulation-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 69, 0, 0.6);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(78, 205, 196, 0.1);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4ecdc4;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <button class="reset-btn" onclick="location.reload()">Reset View</button>
+  <button class="simulation-btn" onclick="window.location.href='simulation.html'">🚀 Restart Simulation</button>
+
+  <div class="panel" id="lesson-panel">
+    <div class="minimize-btn" onclick="togglePanel('lesson-panel')" title="Minimize">−</div>
+    <div class="panel-content">
+      <div class="lesson-title">Asteroid Lab</div>
+      
+      <div class="lesson-step active" onclick="setLesson(0)">
+        <span class="step-number">1</span>
+        <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+          <div class="step-title">What Are Asteroids?</div>
+          <div class="step-desc">Learn the basics about space rocks</div>
+        </div>
+      </div>
+
+      <div class="lesson-step" onclick="setLesson(1)">
+        <span class="step-number">2</span>
+        <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+          <div class="step-title">Size Matters</div>
+          <div class="step-desc">Compare different asteroid sizes</div>
+        </div>
+      </div>
+
+      <div class="lesson-step" onclick="setLesson(2)">
+        <span class="step-number">3</span>
+        <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+          <div class="step-title">Deflection Predictor</div>
+          <div class="step-desc">Test which methods will work</div>
+        </div>
+      </div>
+
+      <div class="lesson-step" onclick="setLesson(3)">
+        <span class="step-number">4</span>
+        <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+          <div class="step-title">Impact Power</div>
+          <div class="step-desc">Calculate collision energy</div>
+        </div>
+      </div>
+
+      <div class="lesson-step" onclick="setLesson(4)">
+        <span class="step-number">5</span>
+        <div style="display: inline-block; vertical-align: top; width: calc(100% - 50px);">
+          <div class="step-title">Defense Methods</div>
+          <div class="step-desc">How we can protect Earth</div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="showQuiz()" style="margin-top: 15px;">Take Quiz</button>
+    </div>
+  </div>
+
+  <div class="panel" id="control-panel">
+    <div class="minimize-btn" onclick="togglePanel('control-panel')" title="Minimize">−</div>
+    <div class="panel-content">
+      <div class="lesson-title" style="font-size: 16px; margin-bottom: 10px;">Interactive Controls</div>
+      <div id="lesson-content"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="info-display">
+    <div class="minimize-btn" onclick="togglePanel('info-display')" title="Minimize">−</div>
+    <div class="panel-content">
+      <div class="lesson-title" style="font-size: 16px;">Calculations</div>
+      <div id="calculation-content"></div>
+    </div>
+  </div>
+
+  <div id="quiz-modal">
+    <div class="quiz-box">
+      <div class="quiz-question" id="quiz-question"></div>
+      <div id="quiz-options"></div>
+      <button class="btn" id="quiz-next" style="margin-top: 20px; display: none;" onclick="nextQuestion()">Next Question</button>
+      <button class="btn" id="quiz-close" style="margin-top: 20px; display: none;" onclick="closeQuiz()">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="ast_lab_engine.js"></script>
+</body>
+</html>

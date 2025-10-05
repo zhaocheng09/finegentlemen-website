@@ -1,0 +1,419 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MapTiler 卫星地图示例（0GCZRo8V9UPQFhWV1vt6）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    body, html { margin:0; padding:0; height:100%; }
+    #map { width:100%; height:100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script>
+    const MAPTILER_KEY = '0GCZRo8V9UPQFhWV1vt6'; // 在这里填入你免费注册的 MapTiler Key
+
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`,
+      center: [116.391,39.907], // 北京中心
+      zoom: 15 // 街道/建筑级别
+    });
+
+    map.setMaxBounds([[-179.999, -85], [179.999, 85]]);
+
+    // 添加缩放控件
+    map.addControl(new maplibregl.NavigationControl());
+    // 可选：添加全屏控件
+    map.addControl(new maplibregl.FullscreenControl());
+  </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>METEOR MADNESS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    body, html { margin:0; padding:0; height:100%; font-family: Arial, sans-serif; }
+    #map { width:100%; height:100%; }
+    .search-box {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1;
+      min-width: 300px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .search-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #333;
+    }
+    .tab-container {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+    }
+    .tab {
+      padding: 8px 12px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #666;
+      font-size: 13px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s;
+    }
+    .tab:hover {
+      color: #4CAF50;
+    }
+    .tab.active {
+      color: #4CAF50;
+      border-bottom-color: #4CAF50;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 3px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    button.primary {
+      width: 100%;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    button.primary:hover {
+      background: #45a049;
+    }
+    button.primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .examples {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #888;
+    }
+    .marker {
+      background-color: #ff4444;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .info-box {
+      background: #f0f8ff;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .coordinates-display {
+      background: #f9f9f9;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 10px;
+      font-family: monospace;
+    }
+    .click-mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f0f8ff;
+      border-radius: 4px;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 20px;
+      background: #ccc;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .toggle-switch.active {
+      background: #4CAF50;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s;
+    }
+    .toggle-switch.active::after {
+      left: 22px;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-box">
+    <h3>🗺️ 地图定位工具</h3>
+    
+    <div class="tab-container">
+      <button class="tab active" onclick="switchTab('coords')">📍 经纬度</button>
+      <button class="tab" onclick="switchTab('country')">🌍 国家搜索</button>
+      <button class="tab" onclick="switchTab('click')">👆 点击选择</button>
+    </div>
+    
+    <!-- 经纬度标签 -->
+    <div id="coords-tab" class="tab-content active">
+      <div class="input-group">
+        <label>纬度 (Latitude):</label>
+        <input type="number" id="lat" placeholder="例如: 39.907" step="any" value="39.907" />
+      </div>
+      <div class="input-group">
+        <label>经度 (Longitude):</label>
+        <input type="number" id="lng" placeholder="例如: 116.391" step="any" value="116.391" />
+      </div>
+      <button class="primary" onclick="goToCoordinates()">🔍 定位到此坐标</button>
+      <div class="examples">
+        示例: 北京(39.907, 116.391) | 纽约(40.7128, -74.0060)
+      </div>
+    </div>
+    
+    <!-- 国家搜索标签 -->
+    <div id="country-tab" class="tab-content">
+      <div class="input-group">
+        <label>国家或城市名称:</label>
+        <input type="text" id="country-search" placeholder="例如: China, USA, Paris, Tokyo" />
+      </div>
+      <button class="primary" onclick="searchCountry()">🔍 搜索定位</button>
+      <div class="examples">
+        可搜索国家、城市或地标名称
+      </div>
+    </div>
+    
+    <!-- 点击选择标签 -->
+    <div id="click-tab" class="tab-content">
+      <div class="click-mode-toggle">
+        <div class="toggle-switch" id="click-toggle" onclick="toggleClickMode()"></div>
+        <span style="font-size: 13px; color: #666;">点击地图选择坐标</span>
+      </div>
+      <div class="info-box">
+        启用后，点击地图任意位置即可在该处添加标记并显示坐标
+      </div>
+      <div class="coordinates-display" id="click-coords">
+        等待点击地图...
+      </div>
+    </div>
+  </div>
+  
+  <div id="map"></div>
+  
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script>
+    const MAPTILER_KEY = '0GCZRo8V9UPQFhWV1vt6';
+    
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`,
+      center: [116.391, 39.907],
+      zoom: 15
+    });
+    
+    map.setMaxBounds([[-179.999, -85], [179.999, 85]]);
+    map.addControl(new maplibregl.NavigationControl());
+    map.addControl(new maplibregl.FullscreenControl());
+    
+    let marker = null;
+    let clickModeEnabled = false;
+    
+    // 切换标签
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+    }
+    
+    // 添加或移动标记
+    function addMarker(lng, lat) {
+      if (marker) {
+        marker.remove();
+      }
+      
+      const el = document.createElement('div');
+      el.className = 'marker';
+      
+      marker = new maplibregl.Marker(el)
+        .setLngLat([lng, lat])
+        .addTo(map);
+    }
+    
+    // 根据坐标定位
+    function goToCoordinates() {
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lng = parseFloat(document.getElementById('lng').value);
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        alert('请输入有效的经纬度数值！');
+        return;
+      }
+      
+      if (lat < -90 || lat > 90) {
+        alert('纬度必须在 -90 到 90 之间！');
+        return;
+      }
+      
+      if (lng < -180 || lng > 180) {
+        alert('经度必须在 -180 到 180 之间！');
+        return;
+      }
+      
+      addMarker(lng, lat);
+      
+      map.flyTo({
+        center: [lng, lat],
+        zoom: 12,
+        essential: true,
+        duration: 2000
+      });
+    }
+    
+    // 搜索国家或城市
+    async function searchCountry() {
+      const query = document.getElementById('country-search').value.trim();
+      
+      if (!query) {
+        alert('请输入国家或城市名称！');
+        return;
+      }
+      
+      try {
+        const response = await fetch(
+          `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${MAPTILER_KEY}`
+        );
+        const data = await response.json();
+        
+        if (data.features && data.features.length > 0) {
+          const [lng, lat] = data.features[0].center;
+          
+          addMarker(lng, lat);
+          
+          map.flyTo({
+            center: [lng, lat],
+            zoom: data.features[0].place_type[0] === 'country' ? 5 : 10,
+            essential: true,
+            duration: 2000
+          });
+          
+          // 更新经纬度输入框
+          document.getElementById('lat').value = lat.toFixed(6);
+          document.getElementById('lng').value = lng.toFixed(6);
+        } else {
+          alert('未找到该地点，请尝试其他名称！');
+        }
+      } catch (error) {
+        alert('搜索失败，请检查网络连接！');
+        console.error(error);
+      }
+    }
+    
+    // 切换点击模式
+    function toggleClickMode() {
+      clickModeEnabled = !clickModeEnabled;
+      const toggle = document.getElementById('click-toggle');
+      
+      if (clickModeEnabled) {
+        toggle.classList.add('active');
+        map.getCanvas().style.cursor = 'crosshair';
+      } else {
+        toggle.classList.remove('active');
+        map.getCanvas().style.cursor = '';
+      }
+    }
+    
+    // 地图点击事件
+    map.on('click', function(e) {
+      if (clickModeEnabled) {
+        const { lng, lat } = e.lngLat;
+        
+        addMarker(lng, lat);
+        
+        // 更新显示
+        document.getElementById('click-coords').innerHTML = `
+          <strong>已选择坐标:</strong><br>
+          纬度: ${lat.toFixed(6)}<br>
+          经度: ${lng.toFixed(6)}
+        `;
+        
+        // 更新经纬度输入框
+        document.getElementById('lat').value = lat.toFixed(6);
+        document.getElementById('lng').value = lng.toFixed(6);
+      }
+    });
+    
+    // 支持回车键提交
+    document.getElementById('lat').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') goToCoordinates();
+    });
+    document.getElementById('lng').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') goToCoordinates();
+    });
+    document.getElementById('country-search').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') searchCountry();
+    });
+    
+    // 初始加载时添加北京标记
+    map.on('load', function() {
+      goToCoordinates();
+    });
+  </script>
+</body>
+</html>
